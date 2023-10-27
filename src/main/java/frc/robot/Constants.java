@@ -30,7 +30,7 @@ public final class Constants {
   public static final class AutoConstants {
     public static final double ksVolts = 0.14534;
     public static final double kvVoltSecondsPerMeter = 4.0318;
-    public static final double kvVoltSecondsSquaredPerMeter = 0.42035;
+    public static final double kaVoltSecondsSquaredPerMeter = 0.42035;
     public static final double kPDriveVel = 0.043262;
     
     public static final double kTrackWidthMeters = Units.inchesToMeters(24);

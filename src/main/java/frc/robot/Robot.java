@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import java.util.Map;
+
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
@@ -11,6 +13,10 @@ import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGReader;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
+import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
@@ -24,6 +30,14 @@ public class Robot extends LoggedRobot {
   private Command m_autonomousCommand;
 
   private RobotContainer m_robotContainer;
+
+  ShuffleboardTab autoTab = Shuffleboard.getTab("AUTON");
+  GenericEntry allianceColor = 
+    autoTab.add("ALLIANCE", true) 
+      .withProperties(Map.of("colorWhenTrue", "blue"))
+      .withPosition(0, 1)
+      .withSize(3, 1)
+      .getEntry();
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -79,7 +93,21 @@ public class Robot extends LoggedRobot {
   public void disabledInit() {}
 
   @Override
-  public void disabledPeriodic() {}
+  public void disabledPeriodic() {
+    if (RobotContainer.autoMap.get(RobotContainer.m_chooser.get()) != "nothing" && RobotContainer.autoMap.get(RobotContainer.m_chooser.get()) != "test") {
+      RobotContainer.drive.showTraj(RobotContainer.autoMap.get(RobotContainer.m_chooser.get()));
+    } else {
+      RobotContainer.drive.showTraj();
+    }
+
+    if (DriverStation.getAlliance() == DriverStation.Alliance.Blue) {
+      allianceColor.setBoolean(true);
+    } else if (DriverStation.getAlliance() == DriverStation.Alliance.Red) {
+      allianceColor.setBoolean(false);
+    } else {
+      allianceColor.setString("ERROR");
+    }
+  }
 
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
