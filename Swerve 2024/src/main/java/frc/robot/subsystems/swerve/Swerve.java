@@ -22,6 +22,11 @@ import frc.robot.subsystems.swerve.modules.ModuleIO;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
+import com.pathplanner.lib.util.PathPlannerLogging;
+import com.pathplanner.lib.util.ReplanningConfig;
+
 public class Swerve extends SubsystemBase {
 
   static final double max_drive_speed = Units.feetToMeters(Constants.SwerveConstants.MAX_SPEED);
@@ -47,6 +52,27 @@ public class Swerve extends SubsystemBase {
     modules[1] = new Module(moduleFR, 1);
     modules[2] = new Module(moduleBL, 2);
     modules[3] = new Module(moduleBR, 3);
+
+    // Configure PathPlanner
+    AutoBuilder.configureHolonomic(
+      this::getPose,
+      this::setPose,
+      () -> kinematics.toChassisSpeeds(getModuleStates()),
+      this::runVelc,
+      new HolonomicPathFollowerConfig(
+        max_drive_speed,
+        drivetrain_radius,
+        new ReplanningConfig()
+      ),
+      this
+    );   
+    
+    PathPlannerLogging.setLogActivePathCallback(
+      (activePath) -> {
+        Logger.recordOutput("Odometry/Trajectory", activePath.toArray(new Pose2d[activePath.size()]));
+      }
+    );
+
   }
 
   @Override

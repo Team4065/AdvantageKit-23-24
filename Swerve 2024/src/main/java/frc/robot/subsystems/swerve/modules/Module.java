@@ -53,9 +53,7 @@ public class Module {
     Logger.processInputs("Swerve/Module", inputs);
 
     if (relativeTurnOffset != null && inputs.turnAbsolutePosition.getRadians() != 0.0) {
-      relativeTurnOffset =
-          inputs.turnAbsolutePosition.minus(
-              inputs.turnPosition); // relative = absolute - relative position
+      relativeTurnOffset = inputs.turnAbsolutePosition.minus(inputs.turnPosition); // relative = absolute - relative position
     }
 
     if (angleSetPoint != null) {

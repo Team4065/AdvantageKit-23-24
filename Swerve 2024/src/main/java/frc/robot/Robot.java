@@ -9,6 +9,8 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.subsystems.util.LocalADStarAK;
+
 import java.util.Map;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
@@ -16,6 +18,8 @@ import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGReader;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
+
+import com.pathplanner.lib.pathfinding.Pathfinding;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -59,7 +63,7 @@ public class Robot extends LoggedRobot {
         // Replaying a log, set up replay source
       case REPLAY:
         setUseTiming(false); // Run as fast as possible
-        String logPath = LogFileUtil.findReplayLog();
+        String logPath = "logs\\Log_23-11-13_10-19-14.wpilog";
         Logger.setReplaySource(new WPILOGReader(logPath));
         Logger.addDataReceiver(new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_sim")));
         break;
@@ -67,6 +71,10 @@ public class Robot extends LoggedRobot {
 
     Logger.start();
     m_robotContainer = new RobotContainer();
+
+    // Set A* algorithim for AdvantageKit as the default path-finding algorithim
+    Pathfinding.setPathfinder(new LocalADStarAK());
+
   }
 
   /**

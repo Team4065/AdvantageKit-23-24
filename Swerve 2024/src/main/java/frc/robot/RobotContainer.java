@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.SwerveControl;
 import frc.robot.subsystems.swerve.GyroIO;
@@ -18,9 +19,13 @@ import frc.robot.subsystems.swerve.Swerve;
 import frc.robot.subsystems.swerve.modules.ModuleIO;
 import frc.robot.subsystems.swerve.modules.ModuleIOSim;
 import frc.robot.subsystems.swerve.modules.ModuleIOTalonFX;
+import frc.robot.subsystems.util.AutoCommandBuilder;
+import frc.robot.subsystems.util.PathFindingWithPath;
 
 import java.util.HashMap;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
+
+import com.pathplanner.lib.auto.AutoBuilder;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -30,7 +35,9 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
  */
 public class RobotContainer {
   public static Swerve m_swerve;
+
   public static GenericHID controller = new GenericHID(0);
+  public static JoystickButton BB = new JoystickButton(controller, 2);
 
   static LoggedDashboardChooser<Command> m_chooser = new LoggedDashboardChooser<>("Auto Chooser");
   static HashMap<Command, String> autoMap = new HashMap<>();
@@ -67,9 +74,11 @@ public class RobotContainer {
         break;
     }
 
-    Shuffleboard.getTab("AUTON").add(m_chooser.getSendableChooser()).withSize(3, 1);
 
-    Command instantCmd = new InstantCommand();
+    // Setting up PathPlanner auto selector
+    m_chooser.addDefaultOption("Nothing", new InstantCommand());
+    m_chooser.addDefaultOption("DEMO", AutoCommandBuilder.returnAutoCommand("Demo Auto"));
+    Shuffleboard.getTab("AUTON").add(m_chooser.getSendableChooser()).withSize(3, 1);
 
     // Configure the trigger bindings
     configureBindings();
@@ -91,6 +100,8 @@ public class RobotContainer {
       () -> -controller.getRawAxis(0), 
       () -> -controller.getRawAxis(4)
     ));
+
+    BB.onTrue(PathFindingWithPath.pathFindingAutoBuilder("Path Finisher"));
   }
 
   /**
