@@ -32,7 +32,7 @@ public final class Constants {
 
     public static final double wheel_radius_meters = Units.inchesToMeters(4);
 
-    public static final double MAX_SPEED = 17;
+    public static final double MAX_SPEED = 18;
 
     public static class ModuleConstants {
       // FRONT LEFT

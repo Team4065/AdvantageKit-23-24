@@ -13,14 +13,18 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.SwerveControl;
+import frc.robot.subsystems.limelight.Vision;
+import frc.robot.subsystems.limelight.VisionIO;
+import frc.robot.subsystems.limelight.VisionLimelight;
+import frc.robot.subsystems.limelight.VisionSimIO;
 import frc.robot.subsystems.swerve.GyroIO;
 import frc.robot.subsystems.swerve.GyroIONavX;
 import frc.robot.subsystems.swerve.Swerve;
 import frc.robot.subsystems.swerve.modules.ModuleIO;
 import frc.robot.subsystems.swerve.modules.ModuleIOSim;
 import frc.robot.subsystems.swerve.modules.ModuleIOTalonFX;
-import frc.robot.subsystems.util.AutoCommandBuilder;
-import frc.robot.subsystems.util.PathFindingWithPath;
+import frc.robot.util.AutoCommandBuilder;
+import frc.robot.util.PathFindingWithPath;
 
 import java.util.HashMap;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
@@ -35,8 +39,11 @@ import com.pathplanner.lib.auto.AutoBuilder;
  */
 public class RobotContainer {
   public static Swerve m_swerve;
+  public static Vision m_vision;
 
   public static GenericHID controller = new GenericHID(0);
+  public static JoystickButton AB = new JoystickButton(controller, 1);
+  public static JoystickButton XB = new JoystickButton(controller, 3);
   public static JoystickButton BB = new JoystickButton(controller, 2);
 
   static LoggedDashboardChooser<Command> m_chooser = new LoggedDashboardChooser<>("Auto Chooser");
@@ -53,6 +60,8 @@ public class RobotContainer {
           new ModuleIOTalonFX(2),
           new ModuleIOTalonFX(3)
         );
+
+        m_vision = new Vision(new VisionLimelight("Limelight"));
         break;
       case SIM:
         m_swerve = new Swerve(
@@ -62,6 +71,9 @@ public class RobotContainer {
           new ModuleIOSim(), 
           new ModuleIOSim()
         );
+
+        m_vision = new Vision(new VisionSimIO());
+
         break;
       default:
         m_swerve = new Swerve(
@@ -71,6 +83,8 @@ public class RobotContainer {
           new ModuleIO() {},
           new ModuleIO() {}
         );
+
+        m_vision = new Vision(new VisionIO() {});
         break;
     }
 
@@ -101,7 +115,10 @@ public class RobotContainer {
       () -> -controller.getRawAxis(4)
     ));
 
-    BB.onTrue(PathFindingWithPath.pathFindingAutoBuilder("Path Finisher"));
+    XB.onTrue(PathFindingWithPath.pathFindingAutoBuilder("Path Finisher 1", XB));
+    AB.onTrue(PathFindingWithPath.pathFindingAutoBuilder("Path Finisher 2", AB));
+    BB.onTrue(PathFindingWithPath.pathFindingAutoBuilder("Path Finisher 3", BB));
+
   }
 
   /**
