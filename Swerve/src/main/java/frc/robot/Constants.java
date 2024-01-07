@@ -16,7 +16,7 @@ import edu.wpi.first.math.util.Units;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
-  public static final Mode currentMode = Mode.REAL;
+  public static final Mode currentMode = Mode.SIM;
 
   public static enum Mode {
     REAL,
@@ -32,7 +32,7 @@ public final class Constants {
 
     public static final double wheel_radius_meters = Units.inchesToMeters(4);
 
-    public static final double MAX_SPEED = 5;
+    public static final double MAX_SPEED_FEET = 14;
 
     public static class ModuleConstants {
       // FRONT LEFT

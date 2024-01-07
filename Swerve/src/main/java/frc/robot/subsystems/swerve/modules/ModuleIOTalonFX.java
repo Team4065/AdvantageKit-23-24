@@ -63,8 +63,8 @@ public class ModuleIOTalonFX implements ModuleIO {
   private final StatusSignal<Double> turnCurrent;
 
   // Gear ratios for SDS MK4i L2, adjust as necessary
-  private final double DRIVE_GEAR_RATIO = (50.0 / 14.0) * (17.0 / 27.0) * (45.0 / 15.0);
-  private final double TURN_GEAR_RATIO = 150.0 / 7.0;
+  private final double DRIVE_GEAR_RATIO = Constants.SwerveConstants.DRIVE_GEAR_RATIO;
+  private final double TURN_GEAR_RATIO = Constants.SwerveConstants.TURN_GEAR_RATIO;
 
   private final boolean isTurnMotorInverted = true;
   private final Rotation2d absoluteEncoderOffset;
@@ -103,6 +103,7 @@ public class ModuleIOTalonFX implements ModuleIO {
     driveConfig.CurrentLimits.StatorCurrentLimit = 40.0;
     driveConfig.CurrentLimits.StatorCurrentLimitEnable = true;
     driveTalon.getConfigurator().apply(driveConfig);
+
     setDriveBrakeMode(true);
 
     var turnConfig = new TalonFXConfiguration();
@@ -183,12 +184,19 @@ public class ModuleIOTalonFX implements ModuleIO {
   @Override
   public void setDriveBrakeMode(boolean enable) {
     var config = new MotorOutputConfigs();
+    config.NeutralMode = enable ? NeutralModeValue.Brake : NeutralModeValue.Coast;
+    if (driveTalon.getDeviceID() == Constants.SwerveConstants.ModuleConstants.backRightDriveID || driveTalon.getDeviceID() == Constants.SwerveConstants.ModuleConstants.frontRightDriveID) {
+      config.Inverted = InvertedValue.Clockwise_Positive;
+    } else if (driveTalon.getDeviceID() == Constants.SwerveConstants.ModuleConstants.frontLeftDriveID || driveTalon.getDeviceID() == Constants.SwerveConstants.ModuleConstants.backLeftDriveID) {
+      config.Inverted = InvertedValue.CounterClockwise_Positive;
+    }
     driveTalon.getConfigurator().apply(config);
   }
 
   @Override
   public void setTurnBrakeMode(boolean enable) {
     var config = new MotorOutputConfigs();
+    config.Inverted = isTurnMotorInverted ? InvertedValue.Clockwise_Positive : InvertedValue.CounterClockwise_Positive;
     config.NeutralMode = enable ? NeutralModeValue.Brake : NeutralModeValue.Coast;
     turnTalon.getConfigurator().apply(config);
   }

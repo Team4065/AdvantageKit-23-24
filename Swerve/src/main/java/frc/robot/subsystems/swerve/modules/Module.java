@@ -38,11 +38,12 @@ public class Module {
         // NEED TO TUNE PID
         driveFeedForward = new SimpleMotorFeedforward(0.03412, 0.14132);
         drivePID = new PIDController(0, 0, 0);
-        turnPID = new PIDController(5, 0, 0.5); 
+        turnPID = new PIDController(3.5, 0, 0); 
         break;
       case REPLAY:
         driveFeedForward = new SimpleMotorFeedforward(0.1, 0.13);
         drivePID = new PIDController(0.05, 0.0, 0.0);
+        // drivePID = new PIDController(0, 0, 0);
         turnPID = new PIDController(7.0, 0.0, 0.0);
         break;
       case SIM:
@@ -58,7 +59,7 @@ public class Module {
     }
 
     turnPID.enableContinuousInput(-Math.PI, Math.PI);
-    setBreakMode(false);
+    setBrakeMode(true);
   }
 
   public void periodic() {
@@ -124,7 +125,7 @@ public class Module {
     speedSetPoint = null;
   }
 
-  public void setBreakMode(boolean enable) {
+  public void setBrakeMode(boolean enable) {
     io.setTurnBrakeMode(enable);
     io.setDriveBrakeMode(enable);
   }
@@ -151,7 +152,7 @@ public class Module {
   }
 
   public SwerveModuleState getState() {
-    return new SwerveModuleState(getVelcMeters(), new Rotation2d(Math.abs(getAngle().getRadians())));
+    return new SwerveModuleState(getVelcMeters(), getAngle());
   }
 
   public double getCharacterizationVelc() {

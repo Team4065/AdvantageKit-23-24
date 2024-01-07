@@ -10,6 +10,10 @@ public interface GyroIO {
     public Rotation2d yawPos = new Rotation2d();
     public double yawDouble = 0.0;
     public double yawVelcRadPerSec = 0.0;
+    public boolean isReseting = false;
+    public double xAccel = 0.0;
+    public double yAccel = 0.0;
+    public double zAccel = 0.0;
   }
 
   public default void updateInputs(GyroIOInputs inputs) {}

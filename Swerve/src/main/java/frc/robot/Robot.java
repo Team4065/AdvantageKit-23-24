@@ -43,22 +43,21 @@ public class Robot extends LoggedRobot {
       // Running on a real robot, log to a USB stick 
       // The "/U" is there to indicate that the roboRIO will store on the USB
       case REAL:
-        // Logger.addDataReceiver(new WPILOGWriter("/media/sda1"));
+        Logger.addDataReceiver(new WPILOGWriter());
         Logger.addDataReceiver(new NT4Publisher());
         break;
 
         // Running a physics simulator, log to local folder
       case SIM:
-        Logger.addDataReceiver(new WPILOGWriter("/logs"));
+        Logger.addDataReceiver(new WPILOGWriter());
         Logger.addDataReceiver(new NT4Publisher());
         break;
 
         // Replaying a log, set up replay source
       case REPLAY:
         setUseTiming(false); // Run as fast as possible
-        String logPath = "logs\\Log_23-11-13_10-19-14.wpilog";
+        String logPath = "C:/Users/Jainish/Desktop/FRC/Robot code/2023-24/AdvantageKit Real Logs/Log_1f703da53dd3a321.wpilog";
         Logger.setReplaySource(new WPILOGReader(logPath));
-        Logger.addDataReceiver(new WPILOGWriter(LogFileUtil.addPathSuffix(logPath, "_sim")));
         break;
     }
 

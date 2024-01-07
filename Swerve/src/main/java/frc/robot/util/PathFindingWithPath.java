@@ -14,11 +14,11 @@ public class PathFindingWithPath {
         PathPlannerPath endPathTraj = PathPlannerPath.fromPathFile(endPath);
 
         PathConstraints constraints = new PathConstraints(
-            3.0, 4.0, 
+            3, 4, 
             Units.degreesToRadians(540), Units.degreesToRadians(720)
         );
 
-        Command pathFindingCommand = AutoBuilder.pathfindThenFollowPath(endPathTraj, constraints, 0.25);
+        Command pathFindingCommand = AutoBuilder.pathfindThenFollowPath(endPathTraj, constraints, 0);
         return pathFindingCommand.until(() -> !(button.getAsBoolean()));
     } 
 }

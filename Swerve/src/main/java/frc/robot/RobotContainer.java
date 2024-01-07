@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -13,6 +15,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.FeedForwardCharacterization;
+import frc.robot.commands.ResetOdo;
 import frc.robot.commands.SwerveControl;
 import frc.robot.subsystems.limelight.Vision;
 import frc.robot.subsystems.limelight.VisionIO;
@@ -46,6 +49,9 @@ public class RobotContainer {
   public static JoystickButton AB = new JoystickButton(controller, 1);
   public static JoystickButton XB = new JoystickButton(controller, 3);
   public static JoystickButton BB = new JoystickButton(controller, 2);
+
+  static LoggedDashboardChooser<Command> m_chooser = new LoggedDashboardChooser<>("Auto Chooser");
+  static HashMap<Command, String> autoMap = new HashMap<>();
 
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
@@ -87,6 +93,9 @@ public class RobotContainer {
         break;
     }
 
+    m_chooser.addDefaultOption("Nothing", new InstantCommand());
+    m_chooser.addDefaultOption("DEMO", AutoCommandBuilder.returnAutoCommand("Demo"));
+    Shuffleboard.getTab("Autonomous").add(m_chooser.getSendableChooser()).withSize(3, 1);
 
     // Setting up PathPlanner auto selector
     // Configure the trigger bindings
@@ -102,6 +111,7 @@ public class RobotContainer {
    * PS4} controllers or {@link edu.wpi.first.wpilibj2.command.button.CommandJoystick Flight
    * joysticks}.
    */
+
   private void configureBindings() {
     m_swerve.setDefaultCommand(new SwerveControl(
       m_swerve, 
@@ -113,7 +123,10 @@ public class RobotContainer {
   /*   XB.onTrue(PathFindingWithPath.pathFindingAutoBuilder("Path Finisher 1", XB));
     AB.onTrue(PathFindingWithPath.pathFindingAutoBuilder("Path Finisher 2", AB));
     BB.onTrue(PathFindingWithPath.pathFindingAutoBuilder("Path Finisher 3", BB)); */
+    // AB.onTrue(PathFindingWithPath.pathFindingAutoBuilder("Path Finisher 1", XB));
 
+    BB.onTrue(PathFindingWithPath.pathFindingAutoBuilder("Path Finisher 1", BB));
+    XB.onTrue(new ResetOdo());
   }
 
   /**
@@ -123,6 +136,6 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     // An example command will be run in autonomous
-    return new FeedForwardCharacterization(m_swerve, m_swerve::runCharacterizationVolts, m_swerve::getCharacterizationVelocity);
+    return m_chooser.get();
   }
 }

@@ -31,7 +31,7 @@ import com.pathplanner.lib.util.ReplanningConfig;
 
 public class Swerve extends SubsystemBase {
 
-  static final double max_drive_speed = Units.feetToMeters(Constants.SwerveConstants.MAX_SPEED);
+  static final double max_drive_speed = Units.feetToMeters(Constants.SwerveConstants.MAX_SPEED_FEET);
   static final double track_width_x = Units.inchesToMeters(30);
   static final double track_width_y = Units.inchesToMeters(30);
   static final double drivetrain_radius = Math.hypot(track_width_x / 2, track_width_y / 2);
@@ -42,13 +42,12 @@ public class Swerve extends SubsystemBase {
   final Module[] modules = new Module[4];
 
   SwerveDriveKinematics kinematics = new SwerveDriveKinematics(getModuleTranslations());
-  Pose2d pose = new Pose2d();
+  Pose2d pose = new Pose2d(0, 0, new Rotation2d());
   Rotation2d lastGyroRotation = new Rotation2d();
 
   /** Creates a new Swerve. */
   public Swerve(GyroIO gyroIO, ModuleIO moduleFL, ModuleIO moduleFR, ModuleIO moduleBL, ModuleIO moduleBR) {
     this.gyroIO = gyroIO; // Initialize gyro
-
     // Initialize modules
     modules[0] = new Module(moduleFL, 0);
     modules[1] = new Module(moduleFR, 1);
@@ -126,6 +125,16 @@ public class Swerve extends SubsystemBase {
     Logger.recordOutput("Odometry/Robot", getPose());
   }
 
+  public SwerveModulePosition[] getModulePos() {
+    SwerveModulePosition[] modulePos = new SwerveModulePosition[4];
+
+    for (int i = 0; i < 4; i++) {
+      modulePos[i] = modules[i].getPosDelta();
+    }
+    
+    return modulePos;
+  }
+
   // Your field-relative control
 
   public void runVelc(ChassisSpeeds speeds) {
@@ -140,7 +149,6 @@ public class Swerve extends SubsystemBase {
       // The module returns the optimized state, useful for logging
       optimizedSetpointStates[i] = modules[i].runSetPoint(setpointStates[i]);
     }
-
     // The OptimizedSetpoints and Setpoints fields measure the same values
 
     // OptimizedSetpoints fields are used to visualize the swerve as a whole, uses a specified array
@@ -150,7 +158,7 @@ public class Swerve extends SubsystemBase {
   }
 
   @AutoLogOutput(key = "SwerveStates/Measured")
-  private SwerveModuleState[] getModuleStates() {
+  public SwerveModuleState[] getModuleStates() {
     SwerveModuleState[] states = new SwerveModuleState[4];
     for (int i = 0; i < 4; i++) {
       states[i] = modules[i].getState();
@@ -200,6 +208,10 @@ public class Swerve extends SubsystemBase {
   // Return robot position
   public Pose2d getPose() {
     return pose;
+  }
+
+  public SwerveDriveKinematics getKinematics() {
+    return kinematics;
   }
 
   // Get rotation

@@ -4,21 +4,39 @@
 
 package frc.robot.subsystems.limelight;
 
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
+import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.RobotContainer;
+import frc.robot.subsystems.swerve.GyroIONavX;
 
 public class Vision extends SubsystemBase {
   private boolean dashboardSignal = false;
   private double limelightHeightInches;
   private VisionIO camera;
   private VisionInputsAutoLogged cameraInputs;
+
+  // State-space is odometery noise (prediction using encoder + vision + kinematics)
+  // Vision-space is vision noise (limelight)
+
+  private final SwerveDrivePoseEstimator m_PoseEstimator = new SwerveDrivePoseEstimator(
+    RobotContainer.m_swerve.getKinematics(), 
+    RobotContainer.m_swerve.getRotation(), 
+    RobotContainer.m_swerve.getModulePos(), 
+    new Pose2d(), 
+    VecBuilder.fill(0.05, 0.05, Units.degreesToRadians(5)),
+    VecBuilder.fill(0.5, 0.5, Units.degreesToRadians(30))
+  );
 
   public Vision(VisionIO camera) {
     cameraInputs = new VisionInputsAutoLogged();
@@ -33,6 +51,14 @@ public class Vision extends SubsystemBase {
     camera.updateInputs(cameraInputs);
     Logger.processInputs("Vision/Front", cameraInputs);
     Logger.recordOutput("PoseVision/Front/LL Pose", calculateLLPose(cameraInputs));
+
+    m_PoseEstimator.update(RobotContainer.m_swerve.getRotation(), RobotContainer.m_swerve.getModulePos());
+    if (cameraInputs.botpose.length > 0) {
+      if (cameraInputs.targetArea > 1 && cameraInputs.targetArea < 3) {
+        RobotContainer.m_swerve.setPose(calculateLLPose(cameraInputs));
+      }
+      m_PoseEstimator.addVisionMeasurement(calculateLLPose(cameraInputs), Timer.getFPGATimestamp() - (cameraInputs.botpose_wpired[6] / 1000.0));
+    }
   }
 
   private NetworkTable getTable(String table) {
@@ -237,11 +263,16 @@ public class Vision extends SubsystemBase {
     // x, y, z, roll, pitch, yaw, total latency
     
     if (inputs.botpose_wpiblue.length > 0) {
-      return new Pose2d(inputs.botpose_wpiblue[0], inputs.botpose_wpiblue[1], new Rotation2d(Units.degreesToRadians(inputs.botpose[5])));
+      return new Pose2d(inputs.botpose_wpiblue[0], inputs.botpose_wpiblue[1], new Rotation2d(Units.degreesToRadians(inputs.botpose_wpired[5])));
     } else {
       return new Pose2d();
     }
 
+  }
+
+  @AutoLogOutput(key = "PoseVision/EstimatedPose")
+  public Pose2d getPoseEstimation() {
+    return m_PoseEstimator.getEstimatedPosition();
   }
 
   public boolean hasMultipleTargets(Limelights limelight) {
